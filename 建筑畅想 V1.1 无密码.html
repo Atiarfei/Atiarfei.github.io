@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>建筑设计概念生成器</title>
+    <style>
+body.dark-mode {
+    --primary-color: #f0f0f0;
+    --secondary-color: #aaaaaa;
+    --accent-color: #2c2c2c;
+    --text-color: #e0e0e0;
+    --light-gray: #444;
+    --medium-gray: #888;
+    --white: #1e1e1e;
+    background-color: var(--white);
+    color: var(--text-color);
+}
+body.dark-mode .input-section,
+body.dark-mode .output-section,
+body.dark-mode .api-settings {
+    background-color: var(--accent-color);
+    box-shadow: none;
+}
+body.dark-mode .generate-btn,
+body.dark-mode .save-api-btn {
+    background-color: #444;
+    color: var(--text-color);
+}
+body.dark-mode .generate-btn:hover,
+body.dark-mode .save-api-btn:hover {
+    background-color: #666;
+}
+body.dark-mode .tab.active {
+    border-bottom: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+body.dark-mode .concept-result {
+    background-color: #3a3a3a;
+    color: var(--text-color);
+    max-height: 500px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+body.dark-mode .notification {
+    background-color: #444;
+    color: var(--text-color);
+}
+body.dark-mode .notification.error {
+    background-color: #ff3b30;
+    color: var(--text-color);
+}
+body.dark-mode header h1,
+body.dark-mode header p,
+body.dark-mode .input-section h2,
+body.dark-mode .output-section h2,
+body.dark-mode .concept-title,
+body.dark-mode .concept-content,
+body.dark-mode .progress-text,
+body.dark-mode .estimated-time,
+body.dark-mode footer p,
+body.dark-mode .history-item {
+    color: var(--primary-color);
+}
+body.dark-mode .history-item {
+    background-color: var(--accent-color);
+}
+body.dark-mode .history-item .delete-btn {
+    filter: grayscale(100%);
+}
+
+:root {
+    --primary-color: #000000;
+    --secondary-color: #666666;
+    --accent-color: #f5f5f7;
+    --text-color: #1d1d1f;
+    --light-gray: #e0e0e0;
+    --medium-gray: #86868b;
+    --white: #ffffff;
+    --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --radius: 8px;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    background-color: #ffffff;
+    color: var(--text-color);
+    line-height: 1.5;
+    font-weight: 300;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding: 2rem 0;
+    position: relative;
+}
+
+header h1 {
+    color: var(--primary-color);
+    font-size: 3.2rem;
+    margin-bottom: 1rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+}
+
+header p {
+    font-size: 1.5rem;
+    color: var(--secondary-color);
+    max-width: 700px;
+    margin: 0 auto;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+}
+
+.main-content {
+    display: flex;
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.input-section {
+    flex: 1;
+    background-color: var(--white);
+    padding: 2.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.input-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+.input-group {
+    margin-bottom: 2rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.7rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    font-size: 1rem;
+    letter-spacing: 0.01em;
+}
+
+.input-group input, .input-group select {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: #f5f5f7;
+}
+
+.input-group input:focus, .input-group select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.select-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    cursor: pointer;
+}
+
+.generate-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
+
+.generate-btn:hover {
+    background-color: #333333;
+    transform: translateY(-2px);
+}
+
+.generate-btn:active {
+    transform: translateY(0);
+}
+
+.generate-btn:disabled {
+    background-color: var(--medium-gray);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.output-section {
+    flex: 2;
+    background-color: var(--white);
+    padding: 2.5rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.output-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.output-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+.concept-result {
+    flex: 1;
+    background-color: var(--accent-color);
+    padding: 2rem;
+    border-radius: var(--radius);
+    overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.6;
+    font-size: 1.05rem;
+    color: var(--text-color);
+    max-height: 500px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.progress-bar-container {
+    width: 100%;
+    height: 6px;
+    background-color: var(--light-gray);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.7rem;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--primary-color);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+    text-align: center;
+    letter-spacing: 0.01em;
+}
+
+.estimated-time {
+    font-size: 0.9rem;
+    color: var(--medium-gray);
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+.concept-title {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    position: relative;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.spinner {
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border-left-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.section-tabs {
+    display: flex;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.tab {
+    padding: 0.8rem 1.5rem;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    margin-right: 1rem;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--medium-gray);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.tab.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.tab:hover:not(.active) {
+    color: #333333;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.concept-section {
+    margin-top: 1.5rem;
+}
+
+.concept-section .concept-title {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.concept-content {
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    line-height: 1.8;
+    font-size: 1.1rem;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+}
+
+.concept-content p {
+    margin-bottom: 1.2rem;
+    line-height: 1.7;
+}
+
+.concept-content p:last-child {
+    margin-bottom: 0;
+}
+
+.concept-content strong {
+    font-weight: 500;
+    color: var(--primary-color);
+}
+
+.concept-content em {
+    font-style: italic;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+    font-weight: 400;
+    font-size: 0.95rem;
+}
+
+.notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.notification.error {
+    background-color: #ff3b30;
+}
+
+.notification.warning {
+    background-color: #ff9500;
+}
+
+footer {
+    margin-top: 2rem;
+    text-align: center;
+    color: var(--medium-gray);
+    font-size: 0.9rem;
+}
+
+/* 增强的专业建筑风格样式 */
+.concept-bullet {
+    margin-bottom: 1rem;
+    padding-left: 1rem;
+}
+
+.concept-bullet li {
+    margin-bottom: 0.5rem;
+    position: relative;
+    padding-left: 1.2rem;
+}
+
+.concept-bullet li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+}
+
+.concept-title::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background-color: var(--primary-color);
+}
+
+@media (max-width: 992px) {
+    .main-content {
+        flex-direction: column;
+    }
+    
+    .api-form {
+        flex-direction: column;
+    }
+    
+    .api-form .input-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .save-api-btn {
+        width: 100%;
+    }
+    
+    header h1 {
+        font-size: 2.5rem;
+    }
+    
+    header p {
+        font-size: 1.2rem;
+    }
+}
+
+/* Welcome screen styles */
+#welcome-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--white);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    overflow: hidden;
+}
+
+#welcome-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+#welcome-message {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    text-align: center;
+    animation: fadeInUp 1s ease-out;
+    position: relative;
+}
+
+#welcome-title {
+    font-size: 3rem;
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 1rem;
+    animation: fadeInUp 1s ease-out;
+    position: relative;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.line {
+    position: absolute;
+    width: 0;
+    height: 2.25px;
+    background-color: var(--primary-color);
+    top: 50%;
+    transition: width 1.5s ease-out;
+}
+
+#line-left {
+    left: 0;
+    animation: lineInLeft 1.5s ease-out forwards;
+}
+
+#line-right {
+    right: 0;
+    animation: lineInRight 1.5s ease-out forwards;
+}
+
+/* Welcome screen line setting */
+
+@keyframes lineInLeft {
+    to {
+        width: var(--line-end-width);
+    }
+}
+
+@keyframes lineInRight {
+    to {
+        width: var(--line-end-width);
+    }
+}
+
+:root {
+    --line-end-width: calc(41.5% - 200px); /* Default to Chinese width */
+}
+
+body[data-language='en'] {
+    --line-end-width: calc(30% - 200px);
+}
+
+/* Modern button styles */
+button {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    margin: 0.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-color);
+    background-color: transparent;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#dark-mode-toggle, #language-toggle {
+    position: absolute;
+    top: 0.2rem;
+    right: 0.2rem;
+    z-index: 60;
+    filter: grayscale(100%);
+}
+
+#language-toggle {
+    right: 4rem;
+}
+
+.language-transition {
+    transition: all 0.5s ease;
+}
+
+.history-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 1rem;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius);
+    padding: 1rem;
+    background-color: var(--accent-color);
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.history-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius);
+    background-color: #fff;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    position: relative;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    cursor: pointer;
+}
+
+.history-item:hover {
+    background-color: var(--light-gray);
+    transform: translateY(-2px);
+}
+
+.history-item .delete-btn {
+    position: absolute;
+    top: 25%;
+    right: -1rem;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 0.6rem; /* Slightly smaller size */
+    cursor: pointer;
+    color: #c4c4c4; /* Lighter color for light mode */
+}
+</style>
+</head>
+<body>
+    <div id="welcome-screen">
+        <div class="line" id="line-left" style="top: 50%; transform: translateY(-50%);"></div>
+        <div class="line" id="line-right" style="top: 50%; transform: translateY(-50%);"></div>
+        <div>
+            <div id="welcome-title" data-en="Welcome to the Arch Vision System" data-zh="欢迎使用建筑畅想系统">欢迎使用建筑畅想系统</div>
+            <div id="welcome-message" data-en="The moment when the dreams of design touches future" data-zh="有宛渠之民，乘船而至，其人善织，其国殷富">有宛渠之民，乘船而至，其人善织，其国殷富</div>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1 data-en="Arch Design Vision System" data-zh="建筑畅想系统">建筑畅想系统</h1>
+            <button id="dark-mode-toggle">🌙</button>
+            <button id="language-toggle">🌐</button>
+            <p data-en="Enter prompts for complete architectural concept design" data-zh="输入提示词，获得完整的建筑设计概念方案">输入提示词，获得完整的建筑设计概念方案</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2 data-en="Enter Prompts" data-zh="输入提示词">输入提示词</h2>
+                <div class="input-group">
+                    <label for="prompt-level1" data-en="Location" data-zh="地理位置">地理位置</label>
+                    <input type="text" id="prompt-level1" placeholder="例如: 深圳，上海" data-en-placeholder="e.g., Shenzhen, Shanghai" data-zh-placeholder="例如: 深圳，上海">
+                </div>
+                <div class="input-group">
+                    <label for="prompt-level2" data-en="Building Type" data-zh="建筑类型">建筑类型</label>
+                    <select id="prompt-level2" class="select-input">
+                        <option value="" disabled selected data-en="Select Building Type" data-zh="请选择建筑类型">请选择建筑类型</option>
+                        <option value="高端住宅" data-en="High-end Residential" data-zh="高端住宅">高端住宅</option>
+                        <option value="商业综合体" data-en="Commercial Complex" data-zh="商业综合体">商业综合体</option>
+                        <option value="办公建筑" data-en="Office Building" data-zh="办公建筑">办公建筑</option>
+                        <option value="文化场馆" data-en="Cultural Venue" data-zh="文化场馆">文化场馆</option>
+                        <option value="教育设施" data-en="Educational Facility" data-zh="教育设施">教育设施</option>
+                        <option value="医疗建筑" data-en="Medical Building" data-zh="医疗建筑">医疗建筑</option>
+                        <option value="酒店" data-en="Hotel" data-zh="酒店">酒店</option>
+                        <option value="公共空间" data-en="Public Space" data-zh="公共空间">公共空间</option>
+                        <option value="产业园区" data-en="Industrial Park" data-zh="产业园区">产业园区</option>
+                        <option value="其他" data-en="Other (Custom)" data-zh="其他 (自定义)">其他 (自定义)</option>
+                    </select>
+                    <input type="text" id="custom-prompt-level2" placeholder="请输入自定义建筑类型" style="display: none; margin-top: 0.5rem;" data-en-placeholder="Enter custom building type" data-zh-placeholder="请输入自定义建筑类型">
+                </div>
+                <div class="input-group">
+                    <label for="prompt-level3" data-en="Design Features/Cultural Attributes" data-zh="设计特性/人文属性">设计特性/人文属性</label>
+                    <input type="text" id="prompt-level3" placeholder="例如: 生态友好/旧城改造/立面设计/文化元素" data-en-placeholder="e.g., Eco-friendly/Urban Renewal/Facade Design/Cultural Elements" data-zh-placeholder="例如: 生态友好/旧城改造/立面设计/文化元素">
+                </div>
+                <div class="input-group">
+                    <label for="prompt-level4" data-en="Building Area (sqm)" data-zh="建筑面积 (平方米)">建筑面积 (平方米)</label>
+                    <input type="number" id="prompt-level4" placeholder="例如: 5000" data-en-placeholder="e.g., 5000" data-zh-placeholder="例如: 5000">
+                </div>
+                <button id="generate-btn" class="generate-btn" disabled data-en="Start Visioning" data-zh="开始畅想">开始畅想</button>
+                <div id="progress-container" style="display: none; margin-top: 1rem;">
+                    <div class="progress-bar-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    <div id="progress-text" class="progress-text" data-en="Conceptualizing (0%)..." data-zh="方案构想中 (0%)...">方案构想中 (0%)...</div>
+                    <div id="estimated-time" class="estimated-time" data-en="Estimated time remaining: 100 seconds" data-zh="预计剩余时间: 100秒">预计剩余时间: 100秒</div>
+                </div>
+            </div>
+            
+            <div class="output-section">
+                <h2 data-en="Design Concept Plan" data-zh="设计概念方案">设计概念方案</h2>
+                <div class="section-tabs">
+                    <button class="tab active" data-tab="concept" data-en="Design Concept" data-zh="设计概念">设计概念</button>
+                    <button class="tab" data-tab="details" data-en="Details" data-zh="细节说明">细节说明</button>
+                    <button class="tab" data-tab="inspiration" data-en="Inspiration" data-zh="设计灵感">设计灵感</button>
+                </div>
+                
+                <div id="concept-tab" class="tab-content active">
+                    <div id="concept-result" class="concept-result">
+                        <div class="concept-title" data-en="Design Concept will be displayed here" data-zh="设计概念将在这里显示">设计概念将在这里显示</div>
+                        <p data-en="Please enter detailed prompts on the left and click the 'Generate Design Concept' button." data-zh="请在左侧输入提示词，然后点击'生成详细设计概念'按钮。">请在左侧输入提示词，然后点击"生成详细设计概念"按钮。</p>
+                    </div>
+                </div>
+                
+                <div id="details-tab" class="tab-content">
+                    <div id="details-result" class="concept-result">
+                        <div class="concept-title" data-en="Details will be displayed here" data-zh="细节说明将在这里显示">细节说明将在这里显示</div>
+                        <p data-en="Please generate the design concept first." data-zh="请首先生成设计概念。">请首先生成设计概念。</p>
+                    </div>
+                </div>
+                
+                <div id="inspiration-tab" class="tab-content">
+                    <div id="inspiration-result" class="concept-result">
+                        <div class="concept-title" data-en="Inspiration will be displayed here" data-zh="设计灵感将在这里显示">设计灵感将在这里显示</div>
+                        <p data-en="Please generate the design concept first." data-zh="请首先生成设计概念。">请首先生成设计概念。</p>
+                    </div>
+                </div>
+
+                <div id="history-list" class="history-list" style="max-height: 150px; overflow-y: auto;">
+                    <div id="history-items"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p data-en="Architectural Design Concept Vision Assistant V 1.0 &copy; 2025 - Atiarfei" data-zh="建筑设计概念畅想助手V 1.0 &copy; 2025 - Atiarfei">建筑设计概念畅想助手V 1.0 &copy; 2025 - Atiarfei</p>
+        </footer>
+    </div>
+
+    <!-- 通知元素 -->
+    <div id="notification" class="notification" data-en="Message Notification" data-zh="消息提示">消息提示</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 缓存常用DOM元素引用 - 性能优化
+            const elements = {
+                promptLevel1: document.getElementById('prompt-level1'),
+                promptLevel2: document.getElementById('prompt-level2'),
+                promptLevel3: document.getElementById('prompt-level3'),
+                promptLevel4: document.getElementById('prompt-level4'),
+                customPromptLevel2: document.getElementById('custom-prompt-level2'),
+                generateBtn: document.getElementById('generate-btn'),
+                progressContainer: document.getElementById('progress-container'),
+                progressBar: document.getElementById('progress-bar'),
+                progressText: document.getElementById('progress-text'),
+                estimatedTime: document.getElementById('estimated-time'),
+                conceptResult: document.getElementById('concept-result'),
+                detailsResult: document.getElementById('details-result'),
+                inspirationResult: document.getElementById('inspiration-result'),
+                tabs: document.querySelectorAll('.tab'),
+                tabContents: document.querySelectorAll('.tab-content'),
+                notification: document.getElementById('notification'),
+                welcomeScreen: document.getElementById('welcome-screen'),
+                languageToggle: document.getElementById('language-toggle'),
+                historyList: document.getElementById('history-list'),
+                historyItems: document.getElementById('history-items')
+            };
+            
+            // 应用程序状态
+            let appState = {
+                progressInterval: null,
+                currentProgress: 0,
+                estimatedTimeLeft: 100,
+                apiSettings: {
+                    endpoint: 'https://api.deepseek.com/v1/chat/completions', // Deepseek API端点
+                    key: 'sk-f13fd71672144f5ebb1fd4b4dfeac0a0', // Deepseek API密钥
+                },
+                isGenerating: false,
+                language: localStorage.getItem('language') || 'zh',
+                history: JSON.parse(localStorage.getItem('history')) || []
+            };
+            
+            // 初始化
+            init();
+            
+            function init() {
+                // 添加事件监听器
+                attachEventListeners();
+                
+                // 平滑滚动
+                setupSmoothScrolling();
+                
+                // 初始状态检查
+                checkInputs();
+
+                // 显示欢迎界面
+                setTimeout(() => {
+                    elements.welcomeScreen.classList.add('hidden');
+                }, 3000);
+
+                // 设置初始语言
+                setLanguage(appState.language);
+
+                // 加载历史记录
+                loadHistory();
+            }
+            
+            function attachEventListeners() {
+                // 生成按钮
+                elements.generateBtn.addEventListener('click', generateConcept);
+                
+                // 建筑类型变化
+                elements.promptLevel2.addEventListener('change', handleBuildingTypeChange);
+                
+                // 标签页切换
+                elements.tabs.forEach(tab => {
+                    tab.addEventListener('click', switchTab);
+                });
+                
+                // 输入变化检测 - 使用事件委托提高性能
+                const inputContainer = document.querySelector('.input-section');
+                inputContainer.addEventListener('input', function(e) {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+                        checkInputs();
+                    }
+                });
+
+                // 语言切换
+                elements.languageToggle.addEventListener('click', toggleLanguage);
+
+                // 清除历史记录
+                elements.historyList.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('delete-btn')) {
+                        deleteHistoryItem(e);
+                    }
+                });
+            }
+            
+            function setupSmoothScrolling() {
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        document.querySelector(this.getAttribute('href')).scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    });
+                });
+            }
+            
+            // 检查输入是否已填写以启用/禁用生成按钮
+            function checkInputs() {
+                const promptLevel1 = elements.promptLevel1.value.trim();
+                
+                let promptLevel2Value;
+                if (elements.promptLevel2.value === "其他") {
+                    promptLevel2Value = elements.customPromptLevel2.value.trim();
+                } else {
+                    promptLevel2Value = elements.promptLevel2.value.trim();
+                }
+                
+                const promptLevel3 = elements.promptLevel3.value.trim();
+                const promptLevel4 = elements.promptLevel4.value.trim();
+                
+                const promptsValid = promptLevel1 && promptLevel2Value && promptLevel3 && promptLevel4;
+                
+                elements.generateBtn.disabled = !promptsValid || appState.isGenerating;
+            }
+            
+            // 处理建筑类型变化 - 显示/隐藏自定义输入
+            function handleBuildingTypeChange() {
+                if (elements.promptLevel2.value === "其他") {
+                    elements.customPromptLevel2.style.display = "block";
+                } else {
+                    elements.customPromptLevel2.style.display = "none";
+                }
+                checkInputs();
+            }
+            
+            // 显示通知
+            function showNotification(message, type = 'info') {
+                elements.notification.textContent = message;
+                elements.notification.className = 'notification';
+                
+                if (type === 'error') {
+                    elements.notification.classList.add('error');
+                } else if (type === 'warning') {
+                    elements.notification.classList.add('warning');
+                }
+                
+                elements.notification.classList.add('show');
+                
+                setTimeout(() => {
+                    elements.notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // 生成设计概念
+            async function generateConcept() {
+                if (appState.isGenerating) return;
+                
+                // 获取输入值
+                const location = elements.promptLevel1.value.trim();
+                let buildingType;
+                
+                if (elements.promptLevel2.value === "其他") {
+                    buildingType = elements.customPromptLevel2.value.trim();
+                } else {
+                    buildingType = elements.promptLevel2.value.trim();
+                }
+                
+                const developer = elements.promptLevel3.value.trim();
+                const area = elements.promptLevel4.value.trim();
+                
+                // 显示加载状态
+                appState.isGenerating = true;
+                elements.generateBtn.disabled = true;
+                showLoading();
+                
+                try {
+                    // 构建请求数据
+                    const requestData = {
+                        model: 'deepseek-reasoner',
+                        messages: [
+                            {
+                                role: "system", 
+                                content: appState.language === 'zh' ? 
+                                    "你是一名专业的建筑设计概念生成器。根据用户提供的地理位置、建筑类型、开发商/特性和建筑面积，生成一份具有深度和实际参考价值的建筑设计概念方案。方案应分为三个部分：概念设计、详细说明、设计灵感。每个部分应具有显著的差异性，使用专业的建筑术语和设计理念，确保内容紧凑美观。进行方案的整体创作时，应该具有专业建筑师的思维能力及创作能力，同时需要参考现实中已经具有的各种项目，保证你给出的设计概念具有参考价值。请特别关注文化元素的融入和设计理念的提炼。此外，考虑到可持续性和环保设计的趋势，确保设计方案在材料选择和能源使用上具有创新性和可持续性。关注建筑的功能性和美学价值之间的平衡，确保设计不仅实用而且具有视觉吸引力。结合最新的建筑技术和智能建筑系统，提升建筑的现代化水平和用户体验。优化现有的回答格式，去除“#”及“*”这两个符号在回答区域的显示，用更为美观和符合现代美学的方式进行显示。回答不需要带有具体的字数统计相关内容，但请确保生成的内容总字数不少于6000字，每个部分不少于2000字，并使用高质量的内容填充这些额外的文字。" :
+                                    "You are a professional architectural design concept generator. Based on the location, building type, developer/characteristics, and building area provided by the user, generate an architectural design concept plan with depth and practical reference value. The plan should be divided into three distinct parts: Concept Design, Detailed Description, and Design Inspiration. Each part should have significant differences. Use professional architectural terminology and design concepts to ensure the content is compact and beautiful. When creating the overall plan, you should have the thinking and creative abilities of a professional architect, and also refer to various existing projects in reality to ensure that the design concept you provide has reference value. Pay special attention to incorporating cultural elements and distilling design philosophies. Additionally, consider the trends of sustainability and eco-friendly design, ensuring that the design plan is innovative and sustainable in terms of material selection and energy use. Focus on balancing functionality and aesthetic value, ensuring the design is not only practical but also visually appealing. Integrate the latest architectural technologies and smart building systems to enhance the modernity and user experience of the building. Optimize the existing response format by removing the display of '#' and '*' symbols in the response area, and present it in a more aesthetically pleasing and modern way. The response does not need to include specific word count statistics, but ensure the generated content is no less than 3000 words in total, with each section containing at least 1000 words, and use high-quality content to fill these additional words."
+                            },
+                            {
+                                role: "user", 
+                                content: appState.language === 'zh' ? 
+                                    `请为以下条件生成建筑设计概念：地理位置：${location}，建筑类型：${buildingType}，开发商/特性：${developer}，建筑面积：${area}平方米。请从建筑师的视角出发，结合实际项目案例，考虑项目设计及落地的实际需求，提供完整的设计概念方案，包括概念设计、详细说明和设计灵感。每个部分应具有显著的差异性。在创作时需要考虑项目当地的气候、人文、经济、技术及其他任何你认为需要注意的点，以保证概念方案具有一定的落地性。特别强调文化元素的融入和设计理念的提炼。还需考虑到可持续性设计的原则，确保建筑在材料和能源使用上具有创新性和环保性。关注建筑的功能性与美学价值的平衡，确保设计不仅实用而且具有视觉吸引力。结合最新的建筑技术和智能建筑系统，提升建筑的现代化水平和用户体验。优化现有的回答格式，去除“#”及“*”这两个符号在回答区域的显示，用更为美观和符合现代美学的方式进行显示。回答不需要带有具体的字数统计相关内容，但请确保生成的内容总字数不少于6000字，每个部分不少于2000字，并使用高质量的内容填充这些额外的文字。` :
+                                    `Please generate an architectural design concept for the following conditions: Location: ${location}, Building Type: ${buildingType}, Developer/Characteristics: ${developer}, Building Area: ${area} sqm. Please approach from the architect's perspective, combining actual project cases, considering the actual needs of project design and implementation, and provide a complete design concept plan, including concept design, detailed description, and design inspiration. Each part should have significant differences. When creating, consider the local climate, culture, economy, technology, and any other points you think need attention to ensure the concept plan has a certain degree of feasibility. Emphasize the incorporation of cultural elements and the distillation of design philosophies. Also, consider the principles of sustainable design, ensuring that the building is innovative and eco-friendly in terms of material and energy use. Focus on balancing functionality and aesthetic value, ensuring the design is not only practical but also visually appealing. Integrate the latest architectural technologies and smart building systems to enhance the modernity and user experience of the building. Optimize the existing response format by removing the display of '#' and '*' symbols in the response area, and present it in a more aesthetically pleasing and modern way. The response does not need to include specific word count statistics, but ensure the generated content is no less than 3000 words in total, with each section containing at least 1000 words, and use high-quality content to fill these additional words.`
+                            }
+                        ],
+                        temperature: 0.6,
+                        max_tokens: 8192
+                    };
+                    
+                    // 发送API请求
+                    const response = await fetch(appState.apiSettings.endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${appState.apiSettings.key}`
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(appState.language === 'zh' ? `API请求失败: ${response.status}` : `API request failed: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // 解析结果
+                    let resultText = '';
+                    
+                    if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+                        resultText = data.choices[0].message.content;
+                    } else {
+                        throw new Error(appState.language === 'zh' ? 'API返回格式不正确' : 'API returned an incorrect format');
+                    }
+                    
+                    // 解析并格式化结果
+                    const sections = parseResultWithProfessionalFormat(resultText);
+                    
+                    // 更新UI
+                    updateUIWithResults(sections);
+
+                    // 保存到历史记录
+                    saveToHistory({ location, buildingType, developer, area, resultText });
+                    
+                } catch (error) {
+                    console.error(appState.language === 'zh' ? '生成概念时出错:' : 'Error generating concept:', error);
+                    showNotification(appState.language === 'zh' ? `生成失败: ${error.message}` : `Generation failed: ${error.message}`, 'error');
+                    
+                    // 重置UI
+                    elements.conceptResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '设计概念将在这里显示' : 'Design Concept will be displayed here', appState.language === 'zh' ? '生成失败，请重试。' : 'Generation failed, please try again.');
+                    elements.detailsResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '细节说明将在这里显示' : 'Details will be displayed here', appState.language === 'zh' ? '请先生成设计概念。' : 'Please generate the design concept first.');
+                    elements.inspirationResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '设计灵感将在这里显示' : 'Inspiration will be displayed here', appState.language === 'zh' ? '请先生成设计概念。' : 'Please generate the design concept first.');
+                } finally {
+                    // 隐藏加载状态
+                    hideLoading();
+                    appState.isGenerating = false;
+                    checkInputs(); // 重新检查输入以更新按钮状态
+                }
+            }
+            
+            // 优化的结果解析，提升格式紧凑性和美观性
+            function parseResultWithProfessionalFormat(text) {
+                const sections = { concept: '', details: '', inspiration: '' };
+                try {
+                    const conceptMatch = text.match(/(?:【第一部分[：:]\s*概念设计】|第一部分[：:]\s*概念设计|1\.?\s*概念设计[：:]?)([\s\S]*?)(?=【第二部分[：:]\s*详细说明】|第二部分[：:]\s*详细说明|2\.?\s*详细说明|$)/i);
+                    const detailsMatch = text.match(/(?:【第二部分[：:]\s*详细说明】|第二部分[：:]\s*详细说明|2\.?\s*详细说明[：:]?)([\s\S]*?)(?=【第三部分[：:]\s*设计灵感】|第三部分[：:]\s*设计灵感|3\.?\s*设计灵感|$)/i);
+                    const inspirationMatch = text.match(/(?:【第三部分[：:]\s*设计灵感】|第三部分[：:]\s*设计灵感|3\.?\s*设计灵感|$)([\s\S]*?)(?=$)/i);
+
+                    if (conceptMatch && conceptMatch[1]) sections.concept = processContentSection(conceptMatch[1].trim());
+                    if (detailsMatch && detailsMatch[1]) sections.details = processContentSection(detailsMatch[1].trim());
+                    if (inspirationMatch && inspirationMatch[1]) sections.inspiration = processContentSection(inspirationMatch[1].trim());
+
+                    if (!sections.concept && !sections.details && !sections.inspiration) {
+                        return performArchitecturalContentAnalysis(text);
+                    }
+                    return sections;
+                } catch (error) {
+                    console.error(appState.language === 'zh' ? '解析结果时出错:' : 'Error parsing results:', error);
+                    return performArchitecturalContentAnalysis(text);
+                }
+            }
+
+            // 处理和清理部分内容的辅助函数
+            function processContentSection(content) {
+                // 移除冗余的项目符号和格式，以便更清晰地显示
+                return content
+                    .replace(/^[#*]\s*/gm, '') // 移除#和*符号
+                    .replace(/【(.+?)】/g, '<strong>$1</strong>') // 将方括号转换为粗体文本
+                    .replace(/\n{3,}/g, '\n\n') // 规范化过多的换行
+                    .replace(/(\n)/g, '<br>') // 将换行符转换为HTML换行
+                    .replace(/(.+?)(?=\n|$)/g, '<p>$1</p>'); // 将每段包裹在<p>标签中
+            }
+            
+            // 处理和清理部分内容的辅助函数
+            function processContentSection(content) {
+                // 移除冗余的项目符号和格式，以便更清晰地显示
+                return content
+                    .replace(/^[•\-*]\s*/gm, '') // 移除项目符号
+                    .replace(/【(.+?)】/g, '<strong>$1</strong>') // 将方括号转换为粗体文本
+                    .replace(/\n{3,}/g, '\n\n'); // 规范化过多的换行
+            }
+
+             // 使用“###”符号优化段落显示逻辑
+             const paragraphs = content.split(/###/).filter(p => p.trim().length > 0);
+                return paragraphs.map(paragraph => {
+                    return '<p>' + paragraph.trim().replace(/\n/g, '<br>') + '</p>';
+                }).join('');
+            
+            // 基于建筑知识的增强内容分析
+            function performArchitecturalContentAnalysis(text) {
+                const sections = {
+                    concept: '',
+                    details: '',
+                    inspiration: ''
+                };
+                
+                // 将文本分割成段落
+                const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
+                
+                // 如果段落太少，无法进行良好分析，则平均分配
+                if (paragraphs.length < 6) {
+                    const partSize = Math.max(1, Math.floor(paragraphs.length / 3));
+                    sections.concept = paragraphs.slice(0, partSize).join('\n\n');
+                    sections.details = paragraphs.slice(partSize, partSize * 2).join('\n\n');
+                    sections.inspiration = paragraphs.slice(partSize * 2).join('\n\n');
+                    return sections;
+                }
+
+                // 使用建筑关键词进行高级内容分析
+                const keywordSets = {
+                    concept: ['设计理念', '设计哲学', '概念', '建筑形态', '形式', '表皮', '立面',
+                            '场地', '环境', '周边', '体量', '标志性', '特征', '气候', '投入', '地表', '城市人文', '设计理念',
+                            '功能美学', '建筑语汇', '设计原理', '空间体验', '建筑符号', '文化', '可持续'],
+                    details: ['空间组织', '功能分区', '流线', '结构系统', '结构概念', '材料', 
+                            '环境策略', '通风', '采光', '节能', '可持续', '用户体验',
+                            '施工细节', '技术规范', '材料选择', '结构分析', '工程管理', '案例参考'],
+                    inspiration: ['灵感', '创新', '技术创新', '未来', '展望', 
+                                '价值', '意义', '艺术', '传统', '当代',
+                                '设计趋势', '前瞻性', '跨学科影响', '社会责任', '生态意识']
+                };
+
+                // 评分每个段落与各部分的相关性
+                const scores = paragraphs.map(paragraph => {
+                    const lowerP = paragraph.toLowerCase();
+                    return {
+                        concept: keywordSets.concept.filter(kw => lowerP.includes(kw)).length,
+                        details: keywordSets.details.filter(kw => lowerP.includes(kw)).length,
+                        inspiration: keywordSets.inspiration.filter(kw => lowerP.includes(kw)).length
+                    };
+                });
+                
+                // 分析分数，找出章节边界
+                let currentSection = 'concept'; // 从概念开始
+                const categorizedParagraphs = {
+                    concept: [],
+                    details: [],
+                    inspiration: []
+                };
+                
+                // 根据关键词分析和位置对段落进行分类
+                paragraphs.forEach((paragraph, index) => {
+                    const score = scores[index];
+                    
+                    // 同时使用分数和位置逻辑以提高分类准确性
+                    if (index < paragraphs.length * 0.33) {
+                        // 第一部分可能是概念，除非有强烈的相反信号
+                        if (score.details > score.concept * 2 && score.details > 2) {
+                            currentSection = 'details';
+                        } else if (score.inspiration > score.concept * 2 && score.inspiration > 2) {
+                            currentSection = 'inspiration';
+                        } else {
+                            currentSection = 'concept';
+                        }
+                    } else if (index < paragraphs.length * 0.66) {
+                        // 中间部分可能是详细说明，除非有强烈的相反信号
+                        if (score.inspiration > score.details * 2 && score.inspiration > 2) {
+                            currentSection = 'inspiration';
+                        } else if (score.concept > score.details * 2 && score.concept > 2) {
+                            currentSection = 'concept';
+                        } else {
+                            currentSection = 'details';
+                        }
+                    } else {
+                        // 最后部分可能是设计灵感，除非有强烈的相反信号
+                        if (score.details > score.inspiration * 2 && score.details > 2) {
+                            currentSection = 'details';
+                        } else if (score.concept > score.inspiration * 2 && score.concept > 2) {
+                            currentSection = 'concept';
+                        } else {
+                            currentSection = 'inspiration';
+                        }
+                    }
+                    
+                    categorizedParagraphs[currentSection].push(paragraph);
+                });
+                
+                // 合并每个部分的段落
+                sections.concept = categorizedParagraphs.concept.join('\n\n');
+                sections.details = categorizedParagraphs.details.join('\n\n');
+                sections.inspiration = categorizedParagraphs.inspiration.join('\n\n');
+                
+                return sections;
+            }
+            
+            // 更新界面显示结果
+            function updateUIWithResults(sections) {
+                elements.conceptResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '概念设计' : 'Concept Design', sections.concept || (appState.language === 'zh' ? '无数据' : 'No data'));
+                elements.detailsResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '详细说明' : 'Detailed Description', sections.details || (appState.language === 'zh' ? '无数据' : 'No data'));
+                elements.inspirationResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '设计灵感' : 'Design Inspiration', sections.inspiration || (appState.language === 'zh' ? '无数据' : 'No data'));
+                
+                // 通知用户生成完成
+                showNotification(appState.language === 'zh' ? '设计概念已生成完毕！' : 'Design concept has been generated!');
+                
+                // 确保第一个标签是活跃的
+                switchToFirstTab();
+            }
+            
+            // 格式化建筑设计部分，提升专业性
+            function formatArchitecturalSection(title, content) {
+                // 首先，用建筑术语强化内容
+                let enhancedContent = highlightArchitecturalTerms(content);
+                
+                // 基本的Markdown到HTML转换
+                let formattedContent = enhancedContent
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                // 确保内容正确包装
+                if (!formattedContent.startsWith('<p>')) {
+                    formattedContent = '<p>' + formattedContent;
+                }
+                if (!formattedContent.endsWith('</p>')) {
+                    formattedContent = formattedContent + '</p>';
+                }
+                
+                // 修复任何剩余的格式问题
+                formattedContent = formattedContent
+                    .replace(/<p><\/p>/g, '')
+                    .replace(/<br><\/p>/g, '</p>')
+                    .replace(/<p><br>/g, '<p>');
+                
+                // 添加建筑设计样式
+                return `<div class="concept-section">
+                        <div class="concept-title">${title}</div>
+                        <div class="concept-content">${formattedContent}</div>
+                      </div>`;
+            }
+            
+            // 高亮建筑术语
+            function highlightArchitecturalTerms(content) {
+                const architecturalTerms = [
+                    '空间', '形态', '体量', '比例', '尺度', '序列', '肌理', '立面', 
+                    '表皮', '结构', '材料', '光影', '流线', '功能', '场地', '环境',
+                    '可持续', '生态', '文化', '历史', '创新', '体验', '感知'
+                ];
+                
+                // 创建用于高亮术语的正则表达式模式
+                const termPattern = new RegExp(`\\b(${architecturalTerms.join('|')})\\b`, 'g');
+                return content.replace(termPattern, '<strong>$1</strong>');
+            }
+            
+            // 显示加载动画和进度条
+            function showLoading() {
+                elements.conceptResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '正在做梦中...' : 'Dreaming...', appState.language === 'zh' ? '请稍候，正在创建设计概念方案...' : 'Please wait, generating design concept...');
+                elements.detailsResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '正在做梦中...' : 'Dreaming...', appState.language === 'zh' ? '请稍候...' : 'Please wait...');
+                elements.inspirationResult.innerHTML = formatArchitecturalSection(appState.language === 'zh' ? '正在做梦中...' : 'Dreaming...', appState.language === 'zh' ? '请稍候...' : 'Please wait...');
+                
+                // 显示进度条
+                elements.progressContainer.style.display = "block";
+                elements.progressBar.style.width = "0%";
+                elements.progressText.textContent = appState.language === 'zh' ? "正在做梦中 (0%)..." : "Dreaming (0%)...";
+                elements.estimatedTime.textContent = appState.language === 'zh' ? `预计剩余时间: ${appState.estimatedTimeLeft}秒` : `Estimated time remaining: ${appState.estimatedTimeLeft} seconds`;
+                
+                // 模拟进度增长
+                startProgressSimulation();
+            }
+            
+            // 隐藏加载动画和进度条
+            function hideLoading() {
+                // 完成进度条
+                elements.progressBar.style.width = "100%";
+                elements.progressText.textContent = appState.language === 'zh' ? "已完成 (100%)" : "Completed (100%)";
+                
+                // 延迟隐藏进度条
+                setTimeout(() => {
+                    elements.progressContainer.style.display = "none";
+                }, 1000);
+                
+                // 清除进度模拟
+                if (appState.progressInterval) {
+                    clearInterval(appState.progressInterval);
+                    appState.progressInterval = null;
+                }
+            }
+            
+            // 进度条模拟
+            function startProgressSimulation() {
+                appState.currentProgress = 0;
+                appState.estimatedTimeLeft = 100;
+                elements.progressBar.style.width = "0%";
+                
+                if (appState.progressInterval) {
+                    clearInterval(appState.progressInterval);
+                }
+                
+                // 使用自然曲线模拟进度 - 先快后慢
+                appState.progressInterval = setInterval(() => {
+                    if (appState.currentProgress < 100) {
+                        // 进度接近100%时增长变慢
+                        const remainingProgress = 100 - appState.currentProgress;
+                        const increment = Math.max(0.1, remainingProgress * 0.05);
+                        
+                        appState.currentProgress = Math.min(100, appState.currentProgress + increment);
+                        elements.progressBar.style.width = appState.currentProgress + "%";
+                        elements.progressText.textContent = appState.language === 'zh' ? `正在做梦中 (${Math.round(appState.currentProgress)}%)...` : `Dreaming (${Math.round(appState.currentProgress)}%)...`;
+                    }
+                    
+                    // 更新倒计时
+                    if (appState.estimatedTimeLeft > 0) {
+                        appState.estimatedTimeLeft--;
+                        elements.estimatedTime.textContent = appState.language === 'zh' ? `预计剩余时间: ${appState.estimatedTimeLeft}秒` : `Estimated time remaining: ${appState.estimatedTimeLeft} seconds`;
+                    }
+                }, 1000);
+            }
+            
+            // 切换标签页
+            function switchTab(event) {
+                const tabName = event.target.getAttribute('data-tab');
+                
+                // 更新标签激活状态
+                elements.tabs.forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+                
+                // 更新内容显示
+                elements.tabContents.forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // 添加淡入淡出动画
+                const targetContent = document.getElementById(`${tabName}-tab`);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            }
+            
+            // 切换到第一个标签
+            function switchToFirstTab() {
+                const firstTab = elements.tabs[0];
+                if (firstTab) {
+                    elements.tabs.forEach(tab => tab.classList.remove('active'));
+                    firstTab.classList.add('active');
+                    
+                    elements.tabContents.forEach(content => content.classList.remove('active'));
+                    const firstTabContent = document.getElementById('concept-tab');
+                    if (firstTabContent) {
+                        firstTabContent.classList.add('active');
+                    }
+                }
+            }
+
+            // 切换语言
+            function toggleLanguage() {
+                appState.language = appState.language === 'zh' ? 'en' : 'zh';
+                localStorage.setItem('language', appState.language);
+                setLanguage(appState.language);
+                document.body.classList.add('language-transition');
+                setTimeout(() => {
+                    document.body.classList.remove('language-transition');
+                }, 500);
+
+                // Adjust welcome screen lines based on language
+                adjustWelcomeScreenLines(appState.language);
+            }
+
+            // 设置语言
+            function setLanguage(language) {
+                document.querySelectorAll('[data-en]').forEach(element => {
+                    element.textContent = element.getAttribute(`data-${language}`);
+                });
+                document.querySelectorAll('[data-en-placeholder]').forEach(element => {
+                    element.placeholder = element.getAttribute(`data-${language}-placeholder`);
+                });
+            }
+
+            // Adjust welcome screen lines based on language
+            function adjustWelcomeScreenLines(language) {
+                const lineLeft = document.getElementById('line-left');
+                const lineRight = document.getElementById('line-right');
+                if (language === 'en') {
+                    lineLeft.style.width = 'calc(30% - 200px)';
+                    lineRight.style.width = 'calc(30% - 200px)';
+                } else {
+                    lineLeft.style.width = 'calc(46% - 200px)';
+                    lineRight.style.width = 'calc(46% - 200px)';
+                }
+            }
+
+            // 加载历史记录
+            function loadHistory() {
+                elements.historyItems.innerHTML = '';
+                appState.history.slice().reverse().forEach((item, index) => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <span>${item.location || 'N/A'} - ${item.buildingType || 'N/A'} - ${item.developer || 'N/A'}</span>
+                        <button class="delete-btn" data-index="${index}" title="Delete">✖️</button>
+                    `;
+                    historyItem.addEventListener('click', () => {
+                        loadHistoryItem(appState.history.length - 1 - index);
+                    });
+                    elements.historyItems.appendChild(historyItem);
+                });
+
+                // 添加删除事件
+                elements.historyItems.querySelectorAll('.delete-btn').forEach(button => {
+                    button.addEventListener('click', deleteHistoryItem);
+                });
+            }
+
+            // 删除历史记录项
+            function deleteHistoryItem(event) {
+                event.stopPropagation(); // 防止触发父元素的点击事件
+                const index = event.target.getAttribute('data-index');
+                appState.history.splice(appState.history.length - 1 - index, 1);
+                localStorage.setItem('history', JSON.stringify(appState.history));
+                loadHistory();
+                showNotification(appState.language === 'zh' ? '历史项目已删除！' : 'History item deleted!');
+            }
+
+            // 清除所有历史记录
+            function clearHistory() {
+                appState.history = [];
+                localStorage.setItem('history', JSON.stringify(appState.history));
+                loadHistory();
+                showNotification(appState.language === 'zh' ? '所有历史记录已清除！' : 'All history cleared!');
+            }
+
+            // 保存到历史记录
+            function saveToHistory(item) {
+                appState.history.push(item);
+                localStorage.setItem('history', JSON.stringify(appState.history));
+                loadHistory();
+            }
+
+            // 加载选中的历史记录项
+            function loadHistoryItem(index) {
+                const selectedItem = appState.history[index];
+                elements.promptLevel1.value = selectedItem.location || '';
+                elements.promptLevel2.value = selectedItem.buildingType || '';
+                elements.promptLevel3.value = selectedItem.developer || '';
+                elements.promptLevel4.value = selectedItem.area || '';
+                const sections = parseResultWithProfessionalFormat(selectedItem.resultText);
+                updateUIWithResults(sections);
+                showNotification(appState.language === 'zh' ? '历史记录已加载！' : 'History item loaded!');
+            }
+        });
+    </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const toggleBtn = document.getElementById('dark-mode-toggle');
+    if (localStorage.getItem('theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        toggleBtn.textContent = '☀️';
+    }
+    toggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        if (document.body.classList.contains('dark-mode')) {
+            localStorage.setItem('theme', 'dark');
+            toggleBtn.textContent = '☀️';
+        } else {
+            localStorage.setItem('theme', 'light');
+            toggleBtn.textContent = '🌙';
+        }
+    });
+});
+</script>
+</body>
+</html>
+<style>
+.concept-result::-webkit-scrollbar,
+.history-list::-webkit-scrollbar {
+    width: 8px;
+}
+.concept-result::-webkit-scrollbar-thumb,
+.history-list::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+.concept-result::-webkit-scrollbar-track,
+.history-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+</style>
